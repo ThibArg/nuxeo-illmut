@@ -1,3 +1,13 @@
+.workplaceChoiceLeft {
+	float: left;
+	padding-left: 5em;
+}
+
+.workplaceChoiceRight {
+	float: right;
+	padding-left: 10em;
+	font-size: smaller;
+}
 
 body, html {
     margin: 0;
