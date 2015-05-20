@@ -13,7 +13,7 @@
 	<div class="ui grid">
 		<div class="four wide column"></div>
 		<div class="ui eight wide column">
-			<div class="ui dividing header">Workplace Enrollment</div>
+			<div id="enrollmentForEmployerTitle" class="ui dividing header">Entrollment for </div>
 		</div>
 		<div class="ui four wide column"></div>
 	</div>
@@ -29,12 +29,10 @@
 						. . .
 					</div>
 				</div>
-				<div class="ui blue segment">
-					<div class="ui dividing tiny header">Recent Activity</div>
-					<div id="mainRecentActivity">
-						14 Enrollments started<br/>
-						15 Applications to submit<br/>
-						. . .
+				<div id="enrollmentSummaryContainer" class="ui blue loading segment">
+					<div class="ui dividing tiny header">Enrollment Summary</div>
+					<div id="enrollmentSummary">
+						
 					</div>
 				</div>
 			</div>
@@ -82,6 +80,11 @@
 		</div>
 	</div>
 </div>
+
+<script type="text/javascript" charset="utf-8">
+	enrollmentForEmployer_init('${Context.getProperty("employerId")}', '${Context.getProperty("employerName")}');
+</script>
+
 
 </@block>
 </@extends>

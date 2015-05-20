@@ -19,8 +19,15 @@ package org.illinoismutual;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.nuxeo.ecm.core.api.CoreSession;
+import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentModelList;
 import org.nuxeo.ecm.webengine.model.WebObject;
 import org.nuxeo.ecm.webengine.model.impl.ModuleRoot;
 
@@ -33,10 +40,55 @@ import org.nuxeo.ecm.webengine.model.impl.ModuleRoot;
 @Produces("text/html;charset=UTF-8")
 @WebObject(type="IllinoisMutualRoot")
 public class IllinoisMutualRoot extends ModuleRoot {
+    
+    private static final Log log = LogFactory.getLog(IllinoisMutualRoot.class);
 
     @GET
     public Object doGet() {
         return getView("index");
+    }
+    
+    @Path("{what}")
+    @GET
+    public Object doSubPath(@PathParam("what") String inWhat,
+            @QueryParam("name") String inNameParam) {
+        
+        Object result = null;
+        DocumentModel currentDoc;
+        CoreSession session = ctx.getCoreSession();
+        String currentUser = session.getPrincipal().getName();
+        
+        log.warn("Received path = " + inWhat + " and name = " + inNameParam);
+        
+        switch(inWhat) {
+        case "enrollmentForEmployer":
+            // using the queryparam
+            DocumentModelList docs = session.query("SELECT * FROM Employer WHERE dc:title ILIKE '" + inNameParam + "'");
+            ctx.setProperty("employerId", "");
+            ctx.setProperty("employerName", "");
+            if(docs.size() > 0) {
+                currentDoc = docs.get(0);
+                ctx.setProperty("employerId", currentDoc.getId());
+                ctx.setProperty("employerName", currentDoc.getTitle());
+            }
+            result = getView("enrollmentForEmployer");
+            break;
+            
+        case "employers":
+            result = getView("employers");
+            break;
+            
+        case "newEnrollment":
+            result = getView("newEnrollment");
+            break;
+        
+        default:
+            // Should have a 404
+            result = getView("index");
+        }
+        
+        return result;
+        
     }
 
 }
