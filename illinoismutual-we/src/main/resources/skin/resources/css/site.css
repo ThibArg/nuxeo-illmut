@@ -1,0 +1,54 @@
+
+body, html {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-width: 1000px;
+    font: normal 12px Verdana, sans-serif;
+}
+
+table.main {
+    border: 0px;
+    width: 100%;
+    height: 100%;
+    border-spacing: 0px;
+    border-collapse: collapse;
+}
+
+table.main td {
+    padding: 0px;
+}
+
+table.header {
+    background-color:white;
+    width: 100%;
+
+    border-bottom: 1px;
+    border-bottom-style: solid;
+}
+
+table.header td {
+    font: normal 12px Verdana, sans-serif;
+    padding: 15px;
+    color: black;   
+    vertical-align: middle;
+}
+
+.mainTable {
+	width: 80%;
+	padding: 15px;
+}
+
+.mainLeft{
+	padding: 10px;
+}
+
+.mainCenter {
+	padding: 10px;
+}
+
+.mainRight {
+	padding: 10px;
+}

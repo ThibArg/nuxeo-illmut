@@ -1,0 +1,10 @@
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: .
+Manifest-Version: 1.0
+Bundle-Name: illinois-mutual-we
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-Vendor: Nuxeo
+Bundle-Version: 1.0.qualifier
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: illinois-mutual-we
+Nuxeo-WebModule: org.nuxeo.ecm.webengine.app.WebEngineModule;name=IllinoisMutual;extends=base;package=org/illinoismutual
