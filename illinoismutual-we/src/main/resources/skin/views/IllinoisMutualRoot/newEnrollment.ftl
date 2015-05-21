@@ -63,7 +63,7 @@
 				</div>
 			</div>
 			<div id="mainRight" class="ui four wide column">
-				<div class="ui red segment">
+				<div class="ui green segment">
 					<div class="ui dividing tiny header">Message Center</div>
 					<div id="mainMessages" class="ui disabled segment">
 						<p></p>

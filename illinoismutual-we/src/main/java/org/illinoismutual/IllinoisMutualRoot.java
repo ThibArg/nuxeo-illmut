@@ -61,7 +61,7 @@ public class IllinoisMutualRoot extends ModuleRoot {
         log.warn("Received path = " + inWhat + " and name = " + inNameParam);
         
         switch(inWhat) {
-        case "enrollmentForEmployer":
+        case "oneEmployer":
             // using the queryparam
             DocumentModelList docs = session.query("SELECT * FROM Employer WHERE dc:title ILIKE '" + inNameParam + "'");
             ctx.setProperty("employerId", "");
@@ -71,7 +71,7 @@ public class IllinoisMutualRoot extends ModuleRoot {
                 ctx.setProperty("employerId", currentDoc.getId());
                 ctx.setProperty("employerName", currentDoc.getTitle());
             }
-            result = getView("enrollmentForEmployer");
+            result = getView("oneEmployer");
             break;
             
         case "employers":
