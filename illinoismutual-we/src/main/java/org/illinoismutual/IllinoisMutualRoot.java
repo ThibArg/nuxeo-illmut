@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.DocumentModelList;
+import org.nuxeo.ecm.core.api.IdRef;
 import org.nuxeo.ecm.webengine.model.WebObject;
 import org.nuxeo.ecm.webengine.model.impl.ModuleRoot;
 
@@ -51,19 +52,19 @@ public class IllinoisMutualRoot extends ModuleRoot {
     @Path("{what}")
     @GET
     public Object doSubPath(@PathParam("what") String inWhat,
-            @QueryParam("name") String inNameParam) {
+            @QueryParam("p1") String inParam1) {
         
         Object result = null;
         DocumentModel currentDoc;
         CoreSession session = ctx.getCoreSession();
-        String currentUser = session.getPrincipal().getName();
+        //String currentUser = session.getPrincipal().getName();
         
-        log.warn("Received path = " + inWhat + " and name = " + inNameParam);
-        
+        log.warn(inWhat + " - " + inParam1);
+                
         switch(inWhat) {
         case "oneEmployer":
-            // using the queryparam
-            DocumentModelList docs = session.query("SELECT * FROM Employer WHERE dc:title ILIKE '" + inNameParam + "'");
+            // using the queryparam. inParam1 is the name of the company
+            DocumentModelList docs = session.query("SELECT * FROM Employer WHERE dc:title ILIKE '" + inParam1 + "'");
             ctx.setProperty("employerId", "");
             ctx.setProperty("employerName", "");
             if(docs.size() > 0) {
@@ -79,6 +80,11 @@ public class IllinoisMutualRoot extends ModuleRoot {
             break;
             
         case "newEnrollment":
+         // using the queryparam inParam1 is the ID of an existing employee
+            ctx.setProperty("employeeId", inParam1);
+            // Get the employer
+            DocumentModel employee = session.getDocument(new IdRef(inParam1)); 
+            ctx.setProperty("employerId", employee.getPropertyValue("employee:employer"));
             result = getView("newEnrollment");
             break;
         

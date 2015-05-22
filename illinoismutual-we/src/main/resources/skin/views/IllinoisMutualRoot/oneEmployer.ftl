@@ -1,9 +1,24 @@
 <@extends src="base.ftl">
+
+<@block name="header_scripts">
+<script src="${skinPath}/scripts/oneEmployer.js"></script>
+</@block>
+
 <@block name="header">You signed in as ${Context.principal}</@block>
 
 <@block name="content">
 
 <div style="margin:10px;">
+
+	<div id="modalConfirm" class="ui small modal">
+		<i class="close icon"></i>
+		<div id="modalConfirmTitle" class="header">New Enrollment</div>
+		<div id="modalConfirmPrompt" class="ui basic segment">Start a new enrollment process for ... ?</div>
+		<div class="actions">
+			<div class="ui negative button">No</div>
+			<div class="ui positive button">Yes</div>
+		</div>
+	</div>
 
 	<div class="ui grid">
 		<div class="equal height row">

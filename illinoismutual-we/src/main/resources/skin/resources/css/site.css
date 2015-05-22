@@ -9,6 +9,19 @@
 	font-size: smaller;
 }
 
+.productTab {
+	min-height: 15em;
+	padding-top: 0em;
+}
+
+.benefitsHeader {
+	font-size: 0.7em;
+}
+
+.benefitsBody {
+	font-size: 0.7em;
+}
+
 body, html {
     margin: 0;
     padding: 0;
@@ -47,8 +60,8 @@ table.header td {
 }
 
 .mainTable {
-	width: 80%;
-	padding: 15px;
+	/*width: 80%;*/
+	/*padding: 15px;*/
 }
 
 .mainLeft{
