@@ -47,4 +47,11 @@ function myFormatJsonDate(inJsonDate) {
 	return "" + (m < 10 ? '0' + m : m) + "-" + (d < 10 ? '0' + d : d) + "-" + y;
 }
 
+function myFormatCurrency(inValue) {
+		
+	inValue = inValue.toFixed(2);
+	
+	return "$" + inValue;
+}
+
 

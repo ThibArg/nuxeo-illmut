@@ -3,7 +3,7 @@
 
 <@block name="content">
 
-<div style="margin:10px;">
+<div style="margin: 10 20 10 20;">
 <!--
 	<div id="mainTop">
 		<p></p>

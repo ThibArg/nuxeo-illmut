@@ -8,7 +8,7 @@
 
 <@block name="content">
 
-<div style="margin:10px;">
+<div style="margin: 10 20 10 20;">
 
 	<div id="enrollmentTitle" class="ui small header center aligned segment" style="padding: 0.5em 0 0.5em 0;">Enrollment for </div>
 
@@ -23,21 +23,8 @@
 				<a class="item" data-tab="Short Term Disability">Short Term Disability</a>
 			</div>
 			<div class="ui bottom attached active tab segment productTab" data-tab="Accident" style="padding-top: 0em">
-				<div id="benefitsTable">
-					<table id="table-Accident" class="display" style="height:19em" cellspacing="0" width="100%">
-						<thead class="benefitsHeader">
-							<tr>
-								<th>Benefits</th>
-								<th>Economy</th>
-								<th>Standard</th>
-								<th>Preferred</th>
-								<th>Premium</th>
-							</tr>
-						</thead>
-						<tbody class="benefitsBody">
-						</tbody>
-					</table>
-					<div id="loaderDiv">
+				<div id="table-Accident-benefits">
+					<div id="table-Accident-loaderDiv">
 						<div class="ui active inverted dimmer">
 							<div class="ui large text loader">
 								Loading...
@@ -47,23 +34,62 @@
 				</div>
 			</div>
 			<div class="ui bottom attached tab segment productTab" data-tab="Disability">
-				(Disability enrollment details)
+				<div id="table-Disability-benefits">
+					<div id="table-Disability-loaderDiv">
+						<div class="ui active inverted dimmer">
+							<div class="ui large text loader">
+								Loading...
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 			<div class="ui bottom attached tab segment productTab" data-tab="Term Life">
 				(Term Life enrollment details)
+				<div id="table-Term-Life-benefits">
+					<div id="table-Term-Life-loaderDiv">
+						<div class="ui active inverted dimmer">
+							<div class="ui large text loader">
+								Loading...
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 			<div class="ui bottom attached tab segment productTab" data-tab="Critical Illness">
 				(Critical Illness enrollment details)
+				<div id="table-Critical-Illness-benefits">
+					<div id="table-Critical-Illness-loaderDiv">
+						<div class="ui active inverted dimmer">
+							<div class="ui large text loader">
+								Loading...
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 			<div class="ui bottom attached tab segment productTab" data-tab="Short Term Disability">
 				(Short Term Disability enrollment details)
+				<div id="table-Short-Term-Disability-benefits">
+					<div id="table-Short-Term-Disability-loaderDiv">
+						<div class="ui active inverted dimmer">
+							<div class="ui large text loader">
+								Loading...
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 
 		</div>
 		<div id="mainRight" class="ui four wide column">
-			<div class="ui segment" style="margin-top:37px;">
+			<div class="ui segment" style="margin-top:37px; text-align:center;">
 				<div class="ui center aligned dividing tiny header">Total Weekly Premium</div>
-				<div id="totalPremium" class="ui center aligned huge header">$0.00</div>
+				<div id="selectionTotal" class="ui center aligned huge header">$0.00</div>
+				<div class="ui divider"></div>
+				<div id="selectionDesc" class="ui right aligned segment" style="font-size:smaller;">
+				</div>
+				<div class="ui fluid primary button">Apply</div>
 			</div>
 		</div>
 	</div>

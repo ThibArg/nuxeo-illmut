@@ -30,7 +30,7 @@
     <tr>
       <td>
 
-        <div style="margin:10px;">
+        <div style="margin: 10 20 10 20;">
 
           <div class="ui menu">
             <div class="item">
