@@ -2,17 +2,21 @@
 /*
  * WARNING: WILL NOT SCALE: We get all the employees, with no pagination, no "infinite scrolling", etc.
  * 
+ * (laos: Using nuxeo.js. This is not a warning. Just think about including nuxeo.js)
  */
-var gEmployees;
+var gEmployees,
+	gEmployerId;
 
 jQuery(document).ready(function() {
-
+	// . . . some init . . .
 });
 
 function enrollmentForEmployer_init(inEmployerId, inEmployerName) {
 
 	var html;
 	
+	gEmployerId = inEmployerId;
+
 	$("#enrollmentForEmployerTitle").text("Enrollment for " + inEmployerName);
 
 	html = "";
@@ -26,127 +30,135 @@ function enrollmentForEmployer_init(inEmployerId, inEmployerName) {
 	$("#mainNavidation").html(html);
 
 	// Dynamically get the enrollment summary
-	enrollmentForEmployer_loadSummary(inEmployerId);
+	enrollmentForEmployer_loadSummary();
 
 	// Dynamically get the list of employees
 	// IMPORTANT: NO PAGINATION HERE, WE GET ALL THE EMPLOYEES
-	enrollmentForEmployer_loadEmployees(inEmployerId);
+	enrollmentForEmployer_loadEmployees();
 }
 
-function enrollmentForEmployer_loadEmployees(inEmployerId) {
-	
+function enrollmentForEmployer_loadEmployees() {
+
 	var nxql,
 		objContainer = $("#employeesList"),
 		objWaiting = $("#employeesLoading"),
 		html,
+		nxClient,
 		start = new Date();
-	
+
 	nxql = "SELECT * FROM Employee"
-			+ " WHERE employee:employer = '" + inEmployerId + "'"
+			+ " WHERE employee:employer = '"
+			+ gEmployerId
+			+ "'"
 			+ " AND ecm:isCheckedInVersion = 0 AND ecm:isProxy = 0 AND ecm:currentLifeCycleState != 'deleted'"
 			+ " ORDER BY employee:last_name, employee:first_name ASC";
 	
-	jQuery.ajax({
-		url : "/nuxeo/api/v1/query?query=" + nxql,
-		contentType : "application/json+nxrequest",
-		headers : {"X-NXProperties": "dublincore, employee"}
-	}).done(function(inData, inStatusText, inXHR) {
-		
-		gEmployees = inData.entries;
-		if ((new Date() - start) < 2000) {
-			setTimeout(function() {
-				displayResults();
-			}, 500);
-		} else {
-			displayResults();
-		}
-		
-	}).fail(function(inXHR, inStatusText, inErrorText) {
-		
-		gEmployees = [];
-
-		html = "";
-		html += "<p>&nbsp;</p><p class='ui header'>Error getting the info</p><p>"
-				+ inErrorText + "</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>";
-		
-		objWaiting.removeClass("loading");
-		objWaiting.addClass("negative message");
-		objWaiting.html( html );
-		
+	nxClient = new nuxeo.Client({
+		timeout : 10000
 	});
-	
-	var displayResults = function () {
-		
+
+	nxClient
+		.headers({"X-NXProperties" : "dublincore, employee" })
+		.request("query?query=" + nxql)
+		.get(function(inError, inData) {
+			if(inError) {
+				gEmployees = [];
+
+				html = "";
+				html += "<p>&nbsp;</p><p class='ui header'>Error getting the info</p><p>"
+						+ inError
+						+ "</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>";
+
+				objWaiting.removeClass("loading");
+				objWaiting.addClass("negative message");
+				objWaiting.html(html);
+				
+			} else {
+				gEmployees = inData.entries;
+
+				waitOrDo(start, displayResults, 1500, 750);
+			}
+		})
+
+	var displayResults = function() {
+
 		html = "<table class='ui table'>";
-			html += "<thead>";
-				html += "<th>Name</th>";
-				html += "<th>DoB</th>";
-				html += "<th>Updated</th>";
-				html += "<th>Application</th>";
-				html += "<th></th>";
-			html += "</thead>";
-			
-			html += "<tbody>";
-			gEmployees.forEach(function(inOneEmployee, inIndex) {
-				var properties = inOneEmployee.properties,
-					state, label;
-								
-				state = properties["employee:enrollment_state"];
-				html += "<tr>";
+		html += "<thead>";
+		html += "<th>Name</th>";
+		html += "<th>DoB</th>";
+		html += "<th>Updated</th>";
+		html += "<th>Application</th>";
+		html += "<th></th>";
+		html += "</thead>";
+
+		html += "<tbody>";
+		gEmployees
+				.forEach(function(inOneEmployee, inIndex) {
+					var properties = inOneEmployee.properties, state, label;
+
+					state = properties["employee:enrollment_state"];
+					html += "<tr>";
 					html += "<td>" + properties["dc:title"] + "</td>";
-					html += "<td>" + myFormatJsonDate( properties["employee:dob"] ) + "</td>";
-					html += "<td>" + myFormatJsonDate( properties["dc:modified"] ) + "</td>";
+					html += "<td>"
+							+ myFormatJsonDate(properties["employee:dob"])
+							+ "</td>";
+					html += "<td>"
+							+ myFormatJsonDate(properties["dc:modified"])
+							+ "</td>";
 					html += "<td>" + state + "</td>";
-					
-					switch(state.toLowerCase()) {
+
+					switch (state.toLowerCase()) {
 					case "not enrolled":
 						label = "Enroll";
 						break;
-						
+
 					case "not signed":
 						label = "Edit";
 						break;
-						
+
 					case "incomplete":
 						label = "Complete";
 						break;
-						
+
 					default:
 						label = "Open";
 						break;
 					}
-					
-					if(label !== "") {
+
+					if (label !== "") {
 						html += "<td style='text-align:center;'>";
-						html += "<div id='" + inOneEmployee.uid + "' class='ui tiny button' style='width:80%;' onclick='employeeButtonClick(this, " + inIndex + ")'>" + label + "</div>"
+						html += "<div id='"
+								+ inOneEmployee.uid
+								+ "' class='ui tiny button' style='width:80%;' onclick='employeeButtonClick(this, "
+								+ inIndex + ")'>" + label + "</div>"
 						html += "</td>";
 					}
-					
-				html += "</tr>";
-			})
-			html += "</tbody>";
+
+					html += "</tr>";
+				})
+		html += "</tbody>";
 		html += "</table>";
-		
+
 		objWaiting.remove();
-		objContainer.html( html );
+		objContainer.html(html);
 	}
 }
 
 function employeeButtonClick(inThisDivButton, inIndex) {
-	
+
 	var employeeId = inThisDivButton.id,
 		action = $(inThisDivButton).text(),
 		modalTitleObj = $("#modalConfirmTitle"),
 		modalPromptObj = $("#modalConfirmPrompt"),
-		ok = false;
-		
-	var employee = gEmployees[inIndex];
-	
+		ok = false,
+		employee = gEmployees[inIndex];
+
 	action = action.toLowerCase();
-	switch(action) {
+	switch (action) {
 	case "enroll":
 		modalTitleObj.text("New Enrollment");
-		modalPromptObj.html("Start a new enrollment process for <b>" + employee.title + "</b>?");
+		modalPromptObj.html("Start a new enrollment process for <b>"
+				+ employee.title + "</b>?");
 		break;
 
 	case "edit":
@@ -161,19 +173,22 @@ function employeeButtonClick(inThisDivButton, inIndex) {
 
 	case "complete":
 		modalTitleObj.text("Complete Enrollment");
-		modalPromptObj.html("Continue enrollment process for <b>" + employee.title + "</b>?");
+		modalPromptObj.html("Continue enrollment process for <b>"
+				+ employee.title + "</b>?");
 		break;
 	}
-	
+
 	$("#modalConfirm")
-		.modal( {
-			onApprove: function() {
+		.modal({
+			onApprove : function() {
 				ok = true;
 				return true;
 			},
-			onHidden: function() {
-				if(ok) {
-					window.location.href = window.location.origin + "/nuxeo/site/IllinoisMutual/newEnrollment?p1=" + employeeId;
+			onHidden : function() {
+				if (ok) {
+					window.location.href = window.location.origin
+							+ "/nuxeo/site/IllinoisMutual/newEnrollment?p1="
+							+ employeeId;
 				}
 			}
 		})
@@ -181,47 +196,40 @@ function employeeButtonClick(inThisDivButton, inIndex) {
 
 }
 
-function enrollmentForEmployer_loadSummary(inEmployerId) {
+function enrollmentForEmployer_loadSummary() {
 
 	var obj = $("#enrollmentSummary"),
 		objContainer = $("#enrollmentSummaryContainer"),
 		html,
 		jsonResult,
-		start = new Date();
+		automationParams,
+		start = new Date(),
+		nxClient;
 
-	var automationParams = {
-		params : {
-			"employerId" : inEmployerId
-		},
-		context : {}
-	};
-	jQuery.ajax({
-		url : "/nuxeo/site/automation/Employer_GetStats_JS",
-		contentType : "application/json+nxrequest",
-		type : "POST",
-		data : JSON.stringify(automationParams),
-
-	}).done(function(inData, inStatusText, inXHR) {
-
-		jsonResult = JSON.parse(inData.value);
-
-		// This is just for the UI. I don't like when you have a waiting UI displayed only half a second,
-		// I always feel like maybe something went wrong
-		if ((new Date() - start) < 2000) {
-			setTimeout(function() {
-				displayResults();
-			}, 500);
-		} else {
-			displayResults();
-		}
-		
-	}).fail(function(inXHR, inStatusText, inErrorText) {
-		obj.html("<p></p><p></p><p>Error getting the info</p>"
-				+ inErrorText + "<p></p><p></p>");
-		objContainer.removeClass("loading");
+	nxClient = new nuxeo.Client({
+		timeout : 10000
 	});
+	
+	nxClient
+		.operation("Employer_GetStats_JS")
+		.params({ "employerId" : gEmployerId })
+		.execute(function(inError, inData) {
+			
+			if(inError) {
+				
+				obj.html("<p></p><p></p><p>Error getting the info</p>"
+						+ inError + "<p></p><p></p>");
+				objContainer.removeClass("loading");
+				
+			} else {
+				
+				jsonResult = JSON.parse(inData.value);
+				
+				waitOrDo(start, displayResults, 1500, 750);
+			}
+		});
 
-	var displayResults = function () {
+	var displayResults = function() {
 
 		var html = "";
 		html += jsonResult.nbEmployees + " employees<br/>";
@@ -232,10 +240,6 @@ function enrollmentForEmployer_loadSummary(inEmployerId) {
 		obj.html(html);
 
 		objContainer.removeClass("loading");
-
 	}
 }
-
-
-
 

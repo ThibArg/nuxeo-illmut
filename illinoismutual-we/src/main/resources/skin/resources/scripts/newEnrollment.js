@@ -198,39 +198,38 @@ function updateTotal() {
 
 function loadEmployee() {
 	
+	var nxClient;
+	
 	gEmployeeJson = null;
 	gEmployerJson = null;
 	
-	// Employee
-	jQuery.ajax({
-		
-		url : "/nuxeo/api/v1/id/" + gEmployeeId,
-		contentType : "application/json+nxrequest",
-		headers : {"X-NXProperties": "dublincore, employee"}
-	
-	}).done(function(inData, inStatusText, inXHR) {
-		
-		gEmployeeJson = inData;
-		gEmployeeJson.imIsDirty = false;
-		
-		// Employer
-		jQuery.ajax({
-			url : "/nuxeo/api/v1/id/" + gEmployerId,
-			contentType : "application/json+nxrequest",
-			headers : {"X-NXDProperties": "dublincore, employer"}
-		}).done(function(inData, inStatusText, inXHR) {
-			
-			gEmployerJson = inData;
-			updateMainTitle();
-			
-		}).fail(function(inXHR, inStatusText, inErrorText) {
-			updateMainTitle(inErrorText);
-		});
-		
-	}).fail(function(inXHR, inStatusText, inErrorText) {
-		updateMainTitle(inErrorText);
+	nxClient = new nuxeo.Client({
+		timeout : 10000
 	});
 	
+	// Get the employee, then the employer
+	nxClient
+		.headers({"X-NXProperties" : "dublincore, employee" })
+		.request("id/" + gEmployeeId)
+		.get(function(inError, inData) {
+			
+			if(inError) {
+				updateMainTitle();
+			} else {
+				
+				gEmployeeJson = inData;
+				gEmployeeJson.imIsDirty = false;
+				
+				// Get the employer
+				nxClient
+					.headers({"X-NXProperties" : "dublincore, employer" })
+					.request("id/" + gEmployerId)
+					.get(function(inError, inData) {
+						gEmployerJson = inData;
+						updateMainTitle();
+					});
+			}
+		});
 }
 
 function updateMainTitle(inError) {

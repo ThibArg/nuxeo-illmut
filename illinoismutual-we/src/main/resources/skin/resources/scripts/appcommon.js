@@ -4,6 +4,25 @@ jQuery(document).ready(function() {
 });
 
 // ========================================== UTILITIES
+
+
+/* This is just for the UI. I don't like when you have a waiting UI
+ * displayed only half a second or less/ Users may think they missed something
+ */
+function waitOrDo(inStart, inCallback, inMin, inWait) {
+	
+	inMin = inMin || 2000;
+	inWait = inWait || 1000;
+	
+	if ((new Date() - inStart) < inMin) {
+		setTimeout(function() {
+			inCallback();
+		}, inWait);
+	} else {
+		inCallback();
+	}
+}
+
 function myFormatJsonDate(inJsonDate) {
 	var y, m, d;
 	
