@@ -10,7 +10,75 @@
 
 <div style="margin: 10 20 10 20;">
 
-	<div id="enrollmentTitle" class="ui small header center aligned segment" style="padding: 0.5em 0 0.5em 0;">Enrollment for </div>
+	<div id="modalEmployee" class="ui small modal" >
+		<i class="close icon"></i>
+		<div id="modalEmployeeTitle" class="header">Info for</div>
+		<div id="modalForm" class="ui form" style="margin:1.2em;">
+			<div class="fields">
+				<div class="field">
+					<label>First name</label>
+					<input id="field_firstName" type="text" placeholder="First Name">
+				</div>
+				<div class="field">
+					<label>Last name</label>
+					<input id="field_lastName" type="text" placeholder="Last Name">
+				</div>
+			</div>
+			<div class="fields">
+				<div class="field">
+					<label>Gender</label>
+					<input id="field_gender" type="text" placeholder="Gender" size="3">
+				</div>
+				<div class="field">
+					<label>Date of Birth</label>
+					<input id="field_dob" type="date">
+				</div>
+			</div>
+			<div class="fields">
+				<div class="field">
+					<label>Street</label>
+					<input id="field_street" type="text" placeholder="Street">
+				</div>
+			</div>
+			<div class="fields">
+				<div class="field">
+					<label>City</label>
+					<input id="field_city" type="text" placeholder="City">
+				</div>
+				<div class="field">
+					<label>Zip</label>
+					<input id="field_zip" type="text" placeholder="Zip" size="10">
+				</div>
+				<div class="field">
+					<label>State</label>
+					<input id="field_state" type="text" placeholder="State" size="10">
+				</div>
+			</div>
+
+		</div>
+		<div class="actions">
+			<div class="ui negative button">Cancel</div>
+			<div class="ui positive button">Save</div>
+		</div>
+	</div>
+
+	<div class="ui center aligned segment" style="padding-top: 0.3em; padding-bottom: 0.8em;">
+		<div id="enrollmentTitle" class="ui small header center aligned basic segment" style="padding: 0;margin-bottom: 0.4em;">Enrollment for</div>
+		<div class="ui ordered steps" style="width:100%;">
+			<div class="completed step" onclick="displayEmployeeInfo();">
+				<div>Employee's Information</div>
+			</div>
+			<div class="active step">
+				<div>Product &amp; Coverage Level</div>
+			</div>
+			<div class="step">
+				<div>Signature</div>
+			</div>
+			<div class="step">
+				<div>Signed</div>
+			</div>
+		</div>
+	</div>
 
 	<div class="ui grid">
 		<div id="mainLeft" class="twelve wide column">
@@ -23,6 +91,22 @@
 				<a class="item" data-tab="Short Term Disability">Short Term Disability</a>
 			</div>
 			<div class="ui bottom attached active tab segment productTab" data-tab="Accident" style="padding-top: 0em">
+				<div style="text-align:center; padding: 0.7em 0 0.3em 0">
+					<label class="horizDivider">Coverage for:</label>
+					<div id="coverageEmployee" class="ui checkbox horizDivider">
+						<input type="checkbox" name="Employee">
+						<label >Employee</label>
+					</div>
+					<div id="coverageSpouse" class="ui checkbox horizDivider">
+						<input if type="checkbox" name="Spouse">
+						<label>Spouse</label>
+					</div>
+					<div id="coverageChildren" class="ui checkbox horizDivider">
+						<input type="checkbox" name="Children">
+						<label>Children</label>
+					</div>
+				</div>
+				<hr style=" margin-top: 0.4em;">
 				<div id="table-Accident-benefits">
 					<div id="table-Accident-loaderDiv">
 						<div class="ui active inverted dimmer">
@@ -80,8 +164,8 @@
 					</div>
 				</div>
 			</div>
-
 		</div>
+
 		<div id="mainRight" class="ui four wide column">
 			<div class="ui segment" style="margin-top:37px; text-align:center;">
 				<div class="ui center aligned dividing tiny header">Total Weekly Premium</div>

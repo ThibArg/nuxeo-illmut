@@ -26,6 +26,10 @@
 	font-size: 0.7em;
 }
 
+.horizDivider {
+	padding-right: 1em;
+}
+
 body, html {
     margin: 0;
     padding: 0;

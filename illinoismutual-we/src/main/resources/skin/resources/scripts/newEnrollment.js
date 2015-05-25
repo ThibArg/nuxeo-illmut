@@ -5,7 +5,9 @@
  * 		- Name of the tab must strictly === id of the product in the Benefit documents
  * 		- id of the main parent of the <table> elements must be "table" + Name-of-Product + "-benefits"
  */
-var gEmployeeJson, gEmployerJson, gSelected = {};
+var gEmployeeJson = null,
+	gEmployerJson = null,
+	gSelected = {};
 
 jQuery(document).ready(function() {
 
@@ -19,6 +21,10 @@ function newEnrollment_init(inEmployeeId, inEmployerId) {
 				loadBenefits(inTabName);
 			}
 		});
+	
+	$("#coverageEmployee").checkbox("toggle");
+	$("#coverageSpouse").checkbox();
+	$("#coverageChidren").checkbox();
 	
 	loadEmployee(inEmployeeId, inEmployerId);
 	loadBenefits("Accident");
@@ -225,6 +231,86 @@ function updateMainTitle(inError) {
 	obj.html( html );
 	if(typeof inError === "string") {
 		obj.addClass("negative message");
+	}
+}
+
+function displayEmployeeInfo() {
+	
+	var props, ok;
+	
+	if(gEmployeeJson != null) {
+		
+		props = gEmployeeJson.properties;
+		
+		$("#modalEmployeeTitle").text("Info for " + gEmployeeJson.title);
+		$("#field_firstName").val(props["employee:first_name"]);
+		$("#field_lastName").val(props["employee:last_name"]);
+		$("#field_gender").val(props["employee:gender"]);
+		$("#field_dob").val( props["employee:dob"].substring(0, 10) );
+		//$("#field_ssn").val(props["employee:ssn"]);
+		$("#field_street").val(props["employee:address_street"]);
+		$("#field_city").val(props["employee:address_city"]);
+		$("#field_zip").val(props["employee:address_zip"]);
+		$("#field_state").val(props["employee:address_state"]);
+		
+		$("#modalEmployee")
+			.modal( {
+				onApprove: function() {
+					ok = true;
+					return true;
+				},
+				onHidden: function() {
+					var data;
+					if(ok) {
+						// Store values locally
+						gEmployeeJson.imIsDirty = true; // Custom property
+						
+						props["employee:first_name"] = $("#field_firstName").val();
+						props["employee:last_name"] = $("#field_lastName").val();
+						props["employee:gender"] = $("#field_gender").val();
+						props["employee:dob"] = $("#field_dob").val() + "T00:00:00Z"; // Build a JSON date
+						props["employee:address_street"] = $("#field_street").val();
+						props["employee:address_city"] = $("#field_city").val();
+						props["employee:address_zip"] = $("#field_zip").val();
+						props["employee:address_state"] = $("#field_state").val();
+						
+						// Now, save on the server. . .
+						data = {
+							"entity-type": "document",
+							"uid" : gEmployeeJson.uid,
+							"properties": {
+								"employee:first_name": props["employee:first_name"],
+								"employee:last_name": props["employee:last_name"],
+								"employee:gender": props["employee:gender"],
+								"employee:dob": props["employee:dob"],
+								"employee:address_street": props["employee:address_street"],
+								"employee:address_city": props["employee:address_city"],
+								"employee:address_zip": props["employee:address_zip"],
+								"employee:address_state": props["employee:address_state"],
+							}
+						};
+						jQuery.ajax({
+							
+							url : "/nuxeo/api/v1/id/" + gEmployeeJson.uid,
+							type: "PUT",
+							data  : JSON.stringify(data),
+							contentType: "application/json",
+							headers : {"X-NXProperties": "dublincore, employee"}
+							
+						}).done(function(inData, inStatusText, inXHR) {
+							
+							gEmployeeJson.imIsDirty = false;
+							gEmployeeJson = inData;
+							updateMainTitle();
+							
+						}).fail(function(inXHR, inStatusText, inErrorText) {
+							console.log("Error updating the employee: " + inErrorText);
+						});
+					}
+				}
+			})
+			.modal("show");
+		
 	}
 }
 
