@@ -11,9 +11,13 @@
 <div style="margin: 10 20 10 20;">
 
 	<!-- Big dimer/loader indicator -->
-	<div class="ui segment">
-		<div id="submitApplicationMessage" class="ui page dimmer">
-		  	<div id="submitApplicationText" class="ui text active large loader"><p>Sending application...</p></div>
+	<div id="submitApplicationMessage" class="ui page dimmer">
+		<div class="content">
+			<div class="center">
+				<div id="submitApplicationText" class="ui text active large loader">
+					<p>Sending application...</p>
+				</div>
+			</div>
 		</div>
 	</div>
 
@@ -74,22 +78,23 @@
 	<div class="ui center aligned segment" style="padding-top: 0.3em; padding-bottom: 0.8em;">
 		<div id="enrollmentTitle" class="ui small header center aligned basic segment" style="padding: 0;margin-bottom: 0.4em;">Enrollment for</div>
 		<div class="ui ordered steps" style="width:100%;">
-			<div class="completed step" onclick="displayEmployeeInfo();" onmouseover="$(this).addClass('highlight');" onmouseout="$(this).removeClass('highlight');">
+			<div id="stepEmployeeInfo" class="completed step" onclick="displayEmployeeInfo();" onmouseover="$(this).addClass('highlight');" onmouseout="$(this).removeClass('highlight');">
 				<div>Employee's Information</div>
 			</div>
-			<div class="active step">
+			<div id="stepSelection" class="active step">
 				<div>Product &amp; Coverage Level</div>
 			</div>
-			<div class="step">
+			<div id="stepSignature" class="step">
 				<div>Signature</div>
 			</div>
-			<div class="step">
+			<div id="stepSigned" class="step">
 				<div>Signed</div>
 			</div>
 		</div>
 	</div>
 
-	<div class="ui grid">
+	<div id="mainGrid" class="ui grid">
+
 		<div id="mainLeft" class="twelve wide column">
 
 			<div id="enrollmentTabs" class="ui top attached tabular menu">
@@ -101,7 +106,7 @@
 			</div>
 			<div class="ui bottom attached active tab segment productTab" data-tab="Accident" style="padding-top: 0em">
 				<div style="text-align:center; padding: 0.7em 0 0.3em 0">
-					<label class="horizDivider">Coverage for:</label>
+					<label class="horizDivider">Coverage for</label>
 					<div id="coverageEmployee" class="ui checkbox horizDivider">
 						<input type="checkbox" name="Employee">
 						<label >Employee</label>
@@ -113,6 +118,11 @@
 					<div id="coverageChildren" class="ui checkbox horizDivider">
 						<input type="checkbox" name="Children">
 						<label>Children</label>
+					</div>
+					<div class="horizDivider"></div>
+					<div class="field" style="display: inline;">
+						<label class="horizDivider">Start date</label>
+						<input id="fieldStartDate" type="date">
 					</div>
 				</div>
 				<hr style=" margin-top: 0.4em;">

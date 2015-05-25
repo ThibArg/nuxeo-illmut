@@ -9,6 +9,7 @@ var gEmployeeJson = null,
 	gEmployerJson = null,
 	gEmployeeId,
 	gEmployerId,
+	gSignedDoc = null,
 	gSelected = {};
 
 jQuery(document).ready(function() {
@@ -336,7 +337,7 @@ function submitApplication() {
 	var startTime = new Date(),
 		product,
 		coverageLevel,
-		html,
+		html, startDate, endDate,
 		automationParams;
 	
 	if(gSelected["Accident"] == null) {
@@ -351,30 +352,36 @@ function submitApplication() {
 		$("#submitApplicationText").html(html);
 		$("#submitApplicationMessage").dimmer("show");
 		
+		startDate = new Date($("#fieldStartDate").val() + "T12:00:00");
+		endDate = new Date(startDate.setYear(new Date().getFullYear() + 1) - 86400000);
+		
 		automationParams = {
 			params : {
 				employeeId	: gEmployeeId,
 				product		: product,
-				coverageLevel : coverageLevel 
+				coverageLevel : coverageLevel,
+				startDate	: $("#fieldStartDate").val() + "T12:00:00",
+				endDate		: endDate.toISOString().substring(0, 19)
 			},
 			context : {}
 		};
+		alert("This a test, no workflow");
 		jQuery.ajax({
-			url : "/nuxeo/site/automation/Employee_REST_NewApplication_JS",
+			url : "/nuxeo/site/automation/REST_test", //Employee_REST_NewApplication",
 			contentType : "application/json+nxrequest",
 			type : "POST",
 			data : JSON.stringify(automationParams)
 		}).done(function(inData, inStatusText, inXHR) {
 			
-			// As usual (well. _mY- "as usual" :-)
+			// As usual (well. _my_ "as usual" :-)
 			// If it's too fast, let it be displayed for 1-2s so the user does
 			// not wonder if they have missed something.
 			if((startTime - (new Date())) < 2000) {
 				setTimeout(function() {
-					displaySuccess();
+					handleSuccess();
 				}, 1500);
 			} else {
-				displaySuccess();
+				handleSuccess();
 			}
 			
 		}).fail(function(inXHR, inStatusText, inErrorText) {
@@ -383,19 +390,106 @@ function submitApplication() {
 		});
 	}
 	
-	function displaySuccess() {
+	function handleSuccess() {
 		
 		$("#submitApplicationMessage").addClass("inverted");
+		
+		// Reload the employee (the doc has new info: enrollment state, etc.)
+		loadEmployee();
 		
 		html = "<p style='color: green'>Product: " + product + " - Coverage: " + coverageLevel +"</p>"
 				+ "<p style='color: green; font-size: larger; font-weight: bold;'>Application created</p>";
 		$("#submitApplicationText").html(html);
+		// Again. We wait just for the fun
 		setTimeout(function() {
 			$("#submitApplicationMessage").dimmer("hide");
-		}, 2000);
-		
+			// Just for the fun, but this part is important: We must move to the next step
+			//window.location.href = window.location.origin + "/nuxeo/site/IllinoisMutual/newEnrollment?p1=" + employeeId + "&p2=waitSignature";
+			setupSignatureStep();
+		}, 1000);
+	}
+}
+
+
+function setupSignatureStep() {
+	
+	var html, mainLeft, height;
+	
+	$("#stepSelection").removeClass("active");
+	$("#stepSelection").addClass("completed");
+	$("#stepSignature").addClass("active");
+	
+	$("#submitApplication").hide();
+	
+	var mainLeft = $("#mainLeft");
+	mainLeft.children().hide();
+	
+	height = $("#mainRightSegment").height();
+	html = "";
+	// Align vertically centered => add a div and set some styling
+	// (the parent is position:relative", which is what we need)
+	// => see myHVCenter class
+	html += "<div id='uploaderMainDiv' class='ui center aligned segment' style='margin-top: 37px; height:" + height + "px'>"
+				+ "<div class='ui inverted blue segment myHVCenter' style='padding: 0.8em;width: 60%;'>"
+				+ "<p class='ui header'>Please, upload the signed document</p>"
+				+ "<div class='field'>"
+					+ "<input id='selectFile' type='file' onchange='handleFiles(this.files)' />"
+				+ "</div>"
+				+ "<div id='uploadFile' class='ui disabled green button' onclick='sendTheFile();' style='margin-top: 1.5em;'>Upload</div>"
+				+ "</div>"
+		 + "</div>";
+	mainLeft.append(html);
+}
+
+function handleFiles(inFiles) {
+	
+	gSignedDoc = null;
+	if(inFiles.length > 0) {
+		gSignedDoc = inFiles[0];
+		$("#uploadFile").removeClass("disabled");
+	} else {
+		$("#uploadFile").addClass("disabled");
+	}
+}
+
+function sendTheFile() {
+	
+	var nxClient, updateDocOpAndUploader;
+	
+	if(gSignedDoc == null) {
+		alert("No fil to send.");
+		return;
 	}
 	
+	$("#uploaderMainDiv").addClass("loading");
+	
+	nxClient = new nuxeo.Client({timeout: 10000});
+	updateDocOpAndUploader = nxClient.operation("Blob.Attach")
+									.params({
+										document: gEmployeeId,
+										save : true,
+										xpath: "employee:current_signed_application"
+									})
+									.uploader();
+	
+	updateDocOpAndUploader.uploadFile(
+			gSignedDoc,
+			function(inErr, inDada) {
+				if(inErr) {
+					alert("Upload file error: " + inErr);
+					$("#uploaderMainDiv").removeClass("loading");
+				} else {
+					updateDocOpAndUploader.execute(function(inErr, inData) {
+						$("#uploaderMainDiv").removeClass("loading");
+						if(inErr) {
+							alert("Upload file error (step 2): " + inErr);
+						} else {
+							alert("TO DO: METTRE A JOUR L'APPLICATION DEUIS UNE CHAINE ET LE WORKFLOW");
+						}
+					});
+				}
+			}
+		);	
 }
 
 

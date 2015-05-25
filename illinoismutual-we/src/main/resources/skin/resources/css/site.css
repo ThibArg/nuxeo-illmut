@@ -28,6 +28,7 @@
 
 .horizDivider {
 	padding-right: 1em;
+	display: inline;
 }
 
 .completed.step.highlight {
@@ -35,49 +36,63 @@
 	cursor: pointer;
 }
 
+.myHVCenter {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+#selectFile {
+	font-size: larger;
+	border-style: solid;
+	border-width: 1px;
+	padding: 1em
+}
+
 body, html {
-    margin: 0;
-    padding: 0;
+	margin: 0;
+	padding: 0;
 }
 
 body {
-    min-width: 1000px;
-    font: normal 12px Verdana, sans-serif;
+	min-width: 1000px;
+	font: normal 12px Verdana, sans-serif;
 }
 
 table.main {
-    border: 0px;
-    width: 100%;
-    height: 100%;
-    border-spacing: 0px;
-    border-collapse: collapse;
+	border: 0px;
+	width: 100%;
+	height: 100%;
+	border-spacing: 0px;
+	border-collapse: collapse;
 }
 
 table.main td {
-    padding: 0px;
+	padding: 0px;
 }
 
 table.header {
-    background-color:white;
-    width: 100%;
-
-    border-bottom: 1px;
-    border-bottom-style: solid;
+	background-color: white;
+	width: 100%;
+	border-bottom: 1px;
+	border-bottom-style: solid;
 }
 
 table.header td {
-    font: normal 12px Verdana, sans-serif;
-    padding: 15px;
-    color: black;   
-    vertical-align: middle;
+	font: normal 12px Verdana, sans-serif;
+	padding: 15px;
+	color: black;
+	vertical-align: middle;
 }
 
 .mainTable {
 	/*width: 80%;*/
 	/*padding: 15px;*/
+	
 }
 
-.mainLeft{
+.mainLeft {
 	padding: 10px;
 }
 
