@@ -30,6 +30,11 @@
 	padding-right: 1em;
 }
 
+.completed.step.highlight {
+	background-color: lightgreen;
+	cursor: pointer;
+}
+
 body, html {
     margin: 0;
     padding: 0;

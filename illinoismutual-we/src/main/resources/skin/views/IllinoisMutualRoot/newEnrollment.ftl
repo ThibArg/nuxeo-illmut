@@ -10,6 +10,14 @@
 
 <div style="margin: 10 20 10 20;">
 
+	<!-- Big dimer/loader indicator -->
+	<div class="ui segment">
+		<div id="submitApplicationMessage" class="ui page dimmer">
+		  	<div id="submitApplicationText" class="ui text active large loader"><p>Sending application...</p></div>
+		</div>
+	</div>
+
+	<!-- This is the (initially hidden) modal letting the user modify the employee's info -->
 	<div id="modalEmployee" class="ui small modal" >
 		<i class="close icon"></i>
 		<div id="modalEmployeeTitle" class="header">Info for</div>
@@ -62,10 +70,11 @@
 		</div>
 	</div>
 
+	<!-- Now, the main UI -->
 	<div class="ui center aligned segment" style="padding-top: 0.3em; padding-bottom: 0.8em;">
 		<div id="enrollmentTitle" class="ui small header center aligned basic segment" style="padding: 0;margin-bottom: 0.4em;">Enrollment for</div>
 		<div class="ui ordered steps" style="width:100%;">
-			<div class="completed step" onclick="displayEmployeeInfo();">
+			<div class="completed step" onclick="displayEmployeeInfo();" onmouseover="$(this).addClass('highlight');" onmouseout="$(this).removeClass('highlight');">
 				<div>Employee's Information</div>
 			</div>
 			<div class="active step">
@@ -129,7 +138,6 @@
 				</div>
 			</div>
 			<div class="ui bottom attached tab segment productTab" data-tab="Term Life">
-				(Term Life enrollment details)
 				<div id="table-Term-Life-benefits">
 					<div id="table-Term-Life-loaderDiv">
 						<div class="ui active inverted dimmer">
@@ -141,7 +149,6 @@
 				</div>
 			</div>
 			<div class="ui bottom attached tab segment productTab" data-tab="Critical Illness">
-				(Critical Illness enrollment details)
 				<div id="table-Critical-Illness-benefits">
 					<div id="table-Critical-Illness-loaderDiv">
 						<div class="ui active inverted dimmer">
@@ -153,7 +160,6 @@
 				</div>
 			</div>
 			<div class="ui bottom attached tab segment productTab" data-tab="Short Term Disability">
-				(Short Term Disability enrollment details)
 				<div id="table-Short-Term-Disability-benefits">
 					<div id="table-Short-Term-Disability-loaderDiv">
 						<div class="ui active inverted dimmer">
@@ -167,13 +173,13 @@
 		</div>
 
 		<div id="mainRight" class="ui four wide column">
-			<div class="ui segment" style="margin-top:37px; text-align:center;">
-				<div class="ui center aligned dividing tiny header">Total Weekly Premium</div>
+			<div id="mainRightSegment" class="ui segment" style="margin-top:37px; text-align:center;">
+				<div class="ui center aligned dividing tiny header">Weekly Total</div>
 				<div id="selectionTotal" class="ui center aligned huge header">$0.00</div>
 				<div class="ui divider"></div>
 				<div id="selectionDesc" class="ui right aligned segment" style="font-size:smaller;">
 				</div>
-				<div class="ui fluid primary button">Apply</div>
+				<div id="submitApplication" class="ui fluid primary disabled button" onclick="submitApplication();">Apply</div>
 			</div>
 		</div>
 	</div>

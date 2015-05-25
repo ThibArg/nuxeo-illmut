@@ -1,12 +1,14 @@
 // newEnrollment.js
 /*
  * WARNINGS
- * 		- Handling only "Accident" here, so it's hard coded
+ * 		- Handling _only_ "Accident" here, so it's hard coded
  * 		- Name of the tab must strictly === id of the product in the Benefit documents
  * 		- id of the main parent of the <table> elements must be "table" + Name-of-Product + "-benefits"
  */
 var gEmployeeJson = null,
 	gEmployerJson = null,
+	gEmployeeId,
+	gEmployerId,
 	gSelected = {};
 
 jQuery(document).ready(function() {
@@ -14,6 +16,9 @@ jQuery(document).ready(function() {
 });
 
 function newEnrollment_init(inEmployeeId, inEmployerId) {
+	
+	gEmployeeId = inEmployeeId;
+	gEmployerId = inEmployerId;
 	
 	$('#enrollmentTabs .item')
 		.tab({
@@ -26,7 +31,7 @@ function newEnrollment_init(inEmployeeId, inEmployerId) {
 	$("#coverageSpouse").checkbox();
 	$("#coverageChidren").checkbox();
 	
-	loadEmployee(inEmployeeId, inEmployerId);
+	loadEmployee();
 	loadBenefits("Accident");
 }
 
@@ -121,10 +126,10 @@ var TABLE_BASE = "<table id='TABLE_ID' class='display cell-border' style='height
 				+ "<tfoot class='benefitsFooter'>"
 					+ "<tr>"
 						+ "<th>Total Weekly Premium</th>"
-						+ "<th><div id='ID_TOT_ECONOMY'   class='ui small circular button TOTAL_COLUMN_CLASS'></div></th>"
-						+ "<th><div id='ID_TOT_STANDARD'  class='ui small circular button TOTAL_COLUMN_CLASS'></div></th>"
-						+ "<th><div id='ID_TOT_PREFERRED' class='ui small circular button TOTAL_COLUMN_CLASS'></div></th>"
-						+ "<th><div id='ID_TOT_PREMIUM'   class='ui small circular button TOTAL_COLUMN_CLASS'></div></th>"
+						+ "<th><div id='ID_TOT_ECONOMY'   class='ui small circular button TOTAL_COLUMN_CLASS' theType='Economy'></div></th>"
+						+ "<th><div id='ID_TOT_STANDARD'  class='ui small circular button TOTAL_COLUMN_CLASS' theType='Standard'></div></th>"
+						+ "<th><div id='ID_TOT_PREFERRED' class='ui small circular button TOTAL_COLUMN_CLASS' theType='Preferred'></div></th>"
+						+ "<th><div id='ID_TOT_PREMIUM'   class='ui small circular button TOTAL_COLUMN_CLASS' theType='Premium'></div></th>"
 					+ "</tr>"
 				+ "</tfoot>"
 				+ "</table>";
@@ -144,40 +149,53 @@ function buildTableMainHTML(inTableId, inUILabel) {
 		
 		$("#" + inTableId + "-benefits").append(html);
 		$("." + inTableId + "-totalColumn").on("click", function(inEvt) {
-			
-			updateTotalPremium($(inEvt.target), inTableId, inUILabel);
-			
+			updateTotalInfo($(inEvt.target), inEvt.altKey, inTableId, inUILabel);
 		});
 	}
 }
 
-function updateTotalPremium(inTotalObj, inTableId, inUILabel) {
+function updateTotalInfo(inTotalObj, inReset, inTableId, inUILabel) {
 	
 	var valueStr, value, tot, htmlTot;
-	
-	// Get the value as number, store it
-	valueStr = inTotalObj.text();
-	value = parseFloat( valueStr.replace("$", "").trim() );
-	gSelected[inUILabel] = value;
-	
-	// Set the selected button to blue
+
 	$("." + inTableId + "-totalColumn").removeClass("blue");
-	inTotalObj.addClass("blue");
-	
-	// Update total
+	if(inReset) {
+		if(inUILabel in gSelected) {
+			delete gSelected[inUILabel];
+		}
+	} else {
+		// Get the value as number, store it
+		valueStr = inTotalObj.text();
+		value = parseFloat( valueStr.replace("$", "").trim() );
+		gSelected[inUILabel] = {"value": value, "level": inTotalObj.attr("theType")};
+		
+		// Set the selected button to blue
+		inTotalObj.addClass("blue");
+	}
+	updateTotal();
+}
+
+function updateTotal() {
 	tot = 0;
 	htmlTot = "";
 	for(prop in gSelected) {
 		if(gSelected.hasOwnProperty(prop)) {
-			tot += gSelected[prop];
-			htmlTot += "<p>" + prop + ": " + myFormatCurrency(gSelected[prop]) + "</p>";
+			tot += gSelected[prop].value;
+			htmlTot += "<div class='ui left aligned small header' style='margin: 0.8em 0 0.4em 0;'>" + prop + "</div>";
+			htmlTot += gSelected[prop].level + ": " + myFormatCurrency( gSelected[prop].value );
 		}
 	}
 	$("#selectionTotal").text( myFormatCurrency(tot) );
 	$("#selectionDesc").html(htmlTot);
+	
+	if(tot > 0) {
+		$("#submitApplication").removeClass("disabled");
+	} else {
+		$("#submitApplication").addClass("disabled");
+	}
 }
 
-function loadEmployee(inEmployeeId, inEmployerId) {
+function loadEmployee() {
 	
 	gEmployeeJson = null;
 	gEmployerJson = null;
@@ -185,17 +203,18 @@ function loadEmployee(inEmployeeId, inEmployerId) {
 	// Employee
 	jQuery.ajax({
 		
-		url : "/nuxeo/api/v1/id/" + inEmployeeId,
+		url : "/nuxeo/api/v1/id/" + gEmployeeId,
 		contentType : "application/json+nxrequest",
 		headers : {"X-NXProperties": "dublincore, employee"}
 	
 	}).done(function(inData, inStatusText, inXHR) {
 		
 		gEmployeeJson = inData;
+		gEmployeeJson.imIsDirty = false;
 		
 		// Employer
 		jQuery.ajax({
-			url : "/nuxeo/api/v1/id/" + inEmployerId,
+			url : "/nuxeo/api/v1/id/" + gEmployerId,
 			contentType : "application/json+nxrequest",
 			headers : {"X-NXDProperties": "dublincore, employer"}
 		}).done(function(inData, inStatusText, inXHR) {
@@ -294,14 +313,13 @@ function displayEmployeeInfo() {
 							url : "/nuxeo/api/v1/id/" + gEmployeeJson.uid,
 							type: "PUT",
 							data  : JSON.stringify(data),
-							contentType: "application/json",
-							headers : {"X-NXProperties": "dublincore, employee"}
+							contentType: "application/json"
 							
 						}).done(function(inData, inStatusText, inXHR) {
 							
-							gEmployeeJson.imIsDirty = false;
-							gEmployeeJson = inData;
-							updateMainTitle();
+							// Reload the employee + employer.
+							// Some server-side business rules may have apply
+							loadEmployee();
 							
 						}).fail(function(inXHR, inStatusText, inErrorText) {
 							console.log("Error updating the employee: " + inErrorText);
@@ -310,8 +328,74 @@ function displayEmployeeInfo() {
 				}
 			})
 			.modal("show");
+	}
+}
+
+function submitApplication() {
+	
+	var startTime = new Date(),
+		product,
+		coverageLevel,
+		html,
+		automationParams;
+	
+	if(gSelected["Accident"] == null) {
+		alert("Only 'Accident' product is handled in this example.");
+	} else {
+		
+		product = "Accident";
+		coverageLevel = gSelected["Accident"].level;
+
+		html = "<p>Product: " + product + " - Coverage: " + coverageLevel +"</p>"
+				+ "<p>Sending Application...</p>";
+		$("#submitApplicationText").html(html);
+		$("#submitApplicationMessage").dimmer("show");
+		
+		automationParams = {
+			params : {
+				employeeId	: gEmployeeId,
+				product		: product,
+				coverageLevel : coverageLevel 
+			},
+			context : {}
+		};
+		jQuery.ajax({
+			url : "/nuxeo/site/automation/Employee_REST_NewApplication_JS",
+			contentType : "application/json+nxrequest",
+			type : "POST",
+			data : JSON.stringify(automationParams)
+		}).done(function(inData, inStatusText, inXHR) {
+			
+			// As usual (well. _mY- "as usual" :-)
+			// If it's too fast, let it be displayed for 1-2s so the user does
+			// not wonder if they have missed something.
+			if((startTime - (new Date())) < 2000) {
+				setTimeout(function() {
+					displaySuccess();
+				}, 1500);
+			} else {
+				displaySuccess();
+			}
+			
+		}).fail(function(inXHR, inStatusText, inErrorText) {
+			alert("Error creating the aplication\n" + inErrorText);
+			$("#submitApplicationMessage").dimmer("hide");
+		});
+	}
+	
+	function displaySuccess() {
+		
+		$("#submitApplicationMessage").addClass("inverted");
+		
+		html = "<p style='color: green'>Product: " + product + " - Coverage: " + coverageLevel +"</p>"
+				+ "<p style='color: green; font-size: larger; font-weight: bold;'>Application created</p>";
+		$("#submitApplicationText").html(html);
+		setTimeout(function() {
+			$("#submitApplicationMessage").dimmer("hide");
+		}, 2000);
 		
 	}
+	
 }
 
 
