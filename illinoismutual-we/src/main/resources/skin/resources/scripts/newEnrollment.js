@@ -220,7 +220,6 @@ function loadEmployee() {
 				gEmployeeJson = inData;
 				gEmployeeJson.imIsDirty = false;
 				
-				// Get the employer
 				nxClient
 					.headers({"X-NXProperties" : "dublincore, employer" })
 					.request("id/" + gEmployerId)
@@ -336,7 +335,7 @@ function submitApplication() {
 	var startTime = new Date(),
 		product,
 		coverageLevel,
-		html, startDate, endDate,
+		html, startDate, endDate, tmpDate,
 		automationParams;
 	
 	if(gSelected["Accident"] == null) {
@@ -352,7 +351,8 @@ function submitApplication() {
 		$("#submitApplicationMessage").dimmer("show");
 		
 		startDate = new Date($("#fieldStartDate").val() + "T12:00:00");
-		endDate = new Date(startDate.setYear(new Date().getFullYear() + 1) - 86400000);
+		tmpDate = new Date(startDate);
+		endDate = new Date(tmpDate.setYear(new Date().getFullYear() + 1) - 86400000);
 		
 		automationParams = {
 			params : {
@@ -364,9 +364,9 @@ function submitApplication() {
 			},
 			context : {}
 		};
-		alert("This a test, no workflow");
+
 		jQuery.ajax({
-			url : "/nuxeo/site/automation/REST_test", //Employee_REST_NewApplication",
+			url : "/nuxeo/site/automation/Employee_REST_NewApplication",
 			contentType : "application/json+nxrequest",
 			type : "POST",
 			data : JSON.stringify(automationParams)
@@ -409,18 +409,52 @@ function submitApplication() {
 	}
 }
 
+// <---------------------------- STEPS ---------------------------->
+var STEPS_IDs = ["stepEmployeeInfo", "stepSelection", "stepSignature", "stepSigned"];
+function resetSteps() {
+	
+	STEPS_IDs.forEach(function(oneId) {
+		
+		$("#" + oneId).removeClass("active");
+		$("#" + oneId).removeClass("completed");
+	});
+}
+
+function activateStep(inWhich) {
+	
+	if(inWhich === "EmployeeInfo") {
+		$("#stepEmployeeInfo").addClass("active");
+		return;
+	}
+	$("#stepEmployeeInfo").addClass("completed");
+	
+	if(inWhich === "Selection") {
+		$("#stepSelection").addClass("active");
+		return;
+	}
+	$("#stepSelection").addClass("completed");
+	
+	if(inWhich === "Signature") {
+		$("#stepSignature").addClass("active");
+		return;
+	}
+	$("#stepSignature").addClass("completed");
+	
+	if(inWhich === "Signed") {
+		$("#stepSigned").addClass("active");
+	}
+}
 
 function setupSignatureStep() {
 	
 	var html, mainLeft, height;
 	
-	$("#stepSelection").removeClass("active");
-	$("#stepSelection").addClass("completed");
-	$("#stepSignature").addClass("active");
+	resetSteps();
+	activateStep("Signature");
 	
 	$("#submitApplication").hide();
 	
-	var mainLeft = $("#mainLeft");
+	mainLeft = $("#mainLeft");
 	mainLeft.children().hide();
 	
 	height = $("#mainRightSegment").height();
@@ -440,6 +474,32 @@ function setupSignatureStep() {
 	mainLeft.append(html);
 }
 
+function setupSignedStep() {
+	
+	var mainLeft,
+		uploaderDiv,
+		html,
+		height;
+	
+	mainLeft = $("#mainLeft");
+	uploaderDiv = $("#uploaderMainDiv");
+	uploaderDiv.fadeOut(function() {
+		
+		height = $("#mainRightSegment").css("height");
+		html = "<div id='signedAppMainDIv' class='ui center aligned segment' style='margin-top: 37px; height:" + height + "'>"
+					+ "<div class='ui segment myHVCenter' style='padding: 0.8em;width: 60%;'>"
+						+ "<p class='ui header'>Your signed application has been submitted</p>"
+						+ "<p></p><p>You will receive an email confirming your enrollment</p>"
+					+ "</div>"
+				+ "</div>";
+		mainLeft.append(html);
+
+		resetSteps();
+		activateStep("Signed");
+		
+	});
+}
+
 function handleFiles(inFiles) {
 	
 	gSignedDoc = null;
@@ -453,42 +513,47 @@ function handleFiles(inFiles) {
 
 function sendTheFile() {
 	
-	var nxClient, updateDocOpAndUploader;
+	var nxClient,
+		uploader,
+		start = new Date();
 	
 	if(gSignedDoc == null) {
-		alert("No fil to send.");
+		alert("No file to send.");
 		return;
 	}
 	
 	$("#uploaderMainDiv").addClass("loading");
 	
 	nxClient = new nuxeo.Client({timeout: 10000});
-	updateDocOpAndUploader = nxClient.operation("Blob.Attach")
-									.params({
-										document: gEmployeeId,
-										save : true,
-										xpath: "employee:current_signed_application"
-									})
-									.uploader();
-	
-	updateDocOpAndUploader.uploadFile(
-			gSignedDoc,
-			function(inErr, inDada) {
-				if(inErr) {
-					alert("Upload file error: " + inErr);
+	uploader = nxClient.operation("Employee_REST_ReceiveSignedApp")
+						.params({
+							employeeId: gEmployeeId
+						})
+						.uploader();
+
+	uploader.uploadFile(
+		gSignedDoc,
+		function(fileIndex, file, timeDiff) {
+			
+			uploader.execute(function(error, data) {
+				
+				if(error) {
 					$("#uploaderMainDiv").removeClass("loading");
+					alert("An error occured: " + inError);
 				} else {
-					updateDocOpAndUploader.execute(function(inErr, inData) {
-						$("#uploaderMainDiv").removeClass("loading");
-						if(inErr) {
-							alert("Upload file error (step 2): " + inErr);
-						} else {
-							alert("TO DO: METTRE A JOUR L'APPLICATION DEUIS UNE CHAINE ET LE WORKFLOW");
-						}
-					});
+					waitOrDo(start, signedDocUploaded)
 				}
-			}
-		);	
+				
+			});
+		}
+	);
+}
+
+function signedDocUploaded() {
+	
+	$("#uploaderMainDiv").removeClass("loading");
+	
+	setupSignedStep();
 }
 
 
