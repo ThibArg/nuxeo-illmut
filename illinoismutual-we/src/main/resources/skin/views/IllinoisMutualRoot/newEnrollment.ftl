@@ -120,7 +120,7 @@
 						<label>Children</label>
 					</div>
 					<div class="horizDivider"></div>
-					<div class="field" style="display: inline;">
+					<div id="fieldStartDateMainDiv" class="field" style="display: inline;">
 						<label class="horizDivider">Start date</label>
 						<input id="fieldStartDate" type="date">
 					</div>

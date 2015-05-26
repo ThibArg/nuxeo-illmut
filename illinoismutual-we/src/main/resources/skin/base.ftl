@@ -2,7 +2,7 @@
 <head>
   <title>
    <@block name="title">
-   WebEngine Project
+   Illinois Mutual
    </@block>
  </title>
  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
@@ -54,7 +54,7 @@
               </div>
               <div class="item">
                 <div class="ui transparent icon input">
-                  <input type="text" placeholder="Search...">
+                  <input id="searchBox" type="text" placeholder="Search..." onchange="handleSearch();">
                   <i class="search link icon"></i>
                 </div>
               </div>

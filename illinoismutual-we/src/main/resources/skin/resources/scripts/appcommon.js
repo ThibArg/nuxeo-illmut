@@ -3,6 +3,16 @@ jQuery(document).ready(function() {
 
 });
 
+// We search only on Employer in this example
+function handleSearch() {
+
+	var value = $("#searchBox").val();
+	
+	if(value != null && value !=  "") {		
+		window.location.href = window.location.origin + "/nuxeo/site/IllinoisMutual/oneEmployer?p1=" + value;
+	}
+}
+
 // ========================================== UTILITIES
 
 

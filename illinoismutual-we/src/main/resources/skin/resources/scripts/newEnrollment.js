@@ -336,7 +336,14 @@ function submitApplication() {
 		product,
 		coverageLevel,
 		html, startDate, endDate, tmpDate,
-		automationParams;
+		automationParams,
+		fieldDateObj;
+	
+	fieldDateObj = $("#fieldStartDate");
+	if(fieldDateObj.val() == "") {
+		fieldDateObj.transition("shake");
+		return;
+	}
 	
 	if(gSelected["Accident"] == null) {
 		alert("Only 'Accident' product is handled in this example.");
@@ -350,7 +357,7 @@ function submitApplication() {
 		$("#submitApplicationText").html(html);
 		$("#submitApplicationMessage").dimmer("show");
 		
-		startDate = new Date($("#fieldStartDate").val() + "T12:00:00");
+		startDate = new Date(fieldDateObj.val() + "T12:00:00");
 		tmpDate = new Date(startDate);
 		endDate = new Date(tmpDate.setYear(new Date().getFullYear() + 1) - 86400000);
 		
@@ -359,7 +366,7 @@ function submitApplication() {
 				employeeId	: gEmployeeId,
 				product		: product,
 				coverageLevel : coverageLevel,
-				startDate	: $("#fieldStartDate").val() + "T12:00:00",
+				startDate	: fieldDateObj.val() + "T12:00:00",
 				endDate		: endDate.toISOString().substring(0, 19)
 			},
 			context : {}
@@ -409,7 +416,64 @@ function submitApplication() {
 	}
 }
 
-// <---------------------------- STEPS ---------------------------->
+// <-------------------- File Upload -------------------->
+function handleFiles(inFiles) {
+	
+	gSignedDoc = null;
+	if(inFiles.length > 0) {
+		gSignedDoc = inFiles[0];
+		$("#uploadFile").removeClass("disabled");
+	} else {
+		$("#uploadFile").addClass("disabled");
+	}
+}
+
+function sendTheFile() {
+	
+	var nxClient,
+		uploader,
+		start = new Date();
+	
+	if(gSignedDoc == null) {
+		alert("No file to send.");
+		return;
+	}
+	
+	$("#uploaderMainDiv").addClass("loading");
+	
+	nxClient = new nuxeo.Client({timeout: 10000});
+	uploader = nxClient.operation("Employee_REST_ReceiveSignedApp")
+						.params({
+							employeeId: gEmployeeId
+						})
+						.uploader();
+
+	uploader.uploadFile(
+		gSignedDoc,
+		function(fileIndex, file, timeDiff) {
+			
+			uploader.execute(function(inError, inData) {
+				
+				if(inError) {
+					$("#uploaderMainDiv").removeClass("loading");
+					alert("An error occured: " + inError);
+				} else {
+					waitOrDo(start, signedDocUploaded)
+				}
+				
+			});
+		}
+	);
+}
+
+function signedDocUploaded() {
+	
+	$("#uploaderMainDiv").removeClass("loading");
+	
+	setupSignedStep();
+}
+
+// <-------------------- STEPS -------------------->
 var STEPS_IDs = ["stepEmployeeInfo", "stepSelection", "stepSignature", "stepSigned"];
 function resetSteps() {
 	
@@ -447,7 +511,7 @@ function activateStep(inWhich) {
 
 function setupSignatureStep() {
 	
-	var html, mainLeft, height;
+	var html, mainLeft, heightStr;
 	
 	resetSteps();
 	activateStep("Signature");
@@ -457,12 +521,12 @@ function setupSignatureStep() {
 	mainLeft = $("#mainLeft");
 	mainLeft.children().hide();
 	
-	height = $("#mainRightSegment").height();
+	heightStr = $("#mainRightSegment").css("height");// Contains the unit ('234px' for example)
 	html = "";
 	// Align vertically centered => add a div and set some styling
 	// (the parent is position:relative", which is what we need)
 	// => see myHVCenter class
-	html += "<div id='uploaderMainDiv' class='ui center aligned segment' style='margin-top: 37px; height:" + height + "px'>"
+	html += "<div id='uploaderMainDiv' class='ui center aligned segment' style='margin-top: 37px; height:" + heightStr + "'>"
 				+ "<div class='ui inverted blue segment myHVCenter' style='padding: 0.8em;width: 60%;'>"
 				+ "<p class='ui header'>Please, upload the signed document</p>"
 				+ "<div class='field'>"
@@ -479,14 +543,14 @@ function setupSignedStep() {
 	var mainLeft,
 		uploaderDiv,
 		html,
-		height;
+		heightStr;
 	
 	mainLeft = $("#mainLeft");
 	uploaderDiv = $("#uploaderMainDiv");
 	uploaderDiv.fadeOut(function() {
 		
-		height = $("#mainRightSegment").css("height");
-		html = "<div id='signedAppMainDIv' class='ui center aligned segment' style='margin-top: 37px; height:" + height + "'>"
+		heightStr = $("#mainRightSegment").css("height");// Contains the unit ('234px' for example)
+		html = "<div id='signedAppMainDIv' class='ui center aligned segment' style='margin-top: 37px; height:" + heightStr + "'>"
 					+ "<div class='ui segment myHVCenter' style='padding: 0.8em;width: 60%;'>"
 						+ "<p class='ui header'>Your signed application has been submitted</p>"
 						+ "<p></p><p>You will receive an email confirming your enrollment</p>"
@@ -499,61 +563,3 @@ function setupSignedStep() {
 		
 	});
 }
-
-function handleFiles(inFiles) {
-	
-	gSignedDoc = null;
-	if(inFiles.length > 0) {
-		gSignedDoc = inFiles[0];
-		$("#uploadFile").removeClass("disabled");
-	} else {
-		$("#uploadFile").addClass("disabled");
-	}
-}
-
-function sendTheFile() {
-	
-	var nxClient,
-		uploader,
-		start = new Date();
-	
-	if(gSignedDoc == null) {
-		alert("No file to send.");
-		return;
-	}
-	
-	$("#uploaderMainDiv").addClass("loading");
-	
-	nxClient = new nuxeo.Client({timeout: 10000});
-	uploader = nxClient.operation("Employee_REST_ReceiveSignedApp")
-						.params({
-							employeeId: gEmployeeId
-						})
-						.uploader();
-
-	uploader.uploadFile(
-		gSignedDoc,
-		function(fileIndex, file, timeDiff) {
-			
-			uploader.execute(function(error, data) {
-				
-				if(error) {
-					$("#uploaderMainDiv").removeClass("loading");
-					alert("An error occured: " + inError);
-				} else {
-					waitOrDo(start, signedDocUploaded)
-				}
-				
-			});
-		}
-	);
-}
-
-function signedDocUploaded() {
-	
-	$("#uploaderMainDiv").removeClass("loading");
-	
-	setupSignedStep();
-}
-
-
