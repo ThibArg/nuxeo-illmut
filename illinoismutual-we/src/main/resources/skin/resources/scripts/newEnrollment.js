@@ -23,7 +23,7 @@ function newEnrollment_init(inEmployeeId, inEmployerId) {
 	
 	$('#enrollmentTabs .item')
 		.tab({
-			onTabLoad(inTabName) {
+			onTabLoad: function (inTabName) {
 				loadBenefits(inTabName);
 			}
 		});
