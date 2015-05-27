@@ -13,7 +13,7 @@ var gEmployeeJson = null,
 	gSelected = {};
 
 jQuery(document).ready(function() {
-
+	// . . . shared init . . .
 });
 
 function newEnrollment_init(inEmployeeId, inEmployerId) {
@@ -416,6 +416,34 @@ function submitApplication() {
 	}
 }
 
+// The doc. is stored in the employee:current_app_not_signed field
+// Using the good old "create an <a> element. With the "download" HTML5 attribute
+// We assume HTML5 is fully supported, <a> element has the "download" property, etc.
+function downloadNonSignedDoc() {
+	
+	var link,
+		fileName,
+		url,
+		props,
+		evt;
+	
+	props = gEmployeeJson.properties;
+	fileName = props["employee:current_app_product"] + "-" + props["employee:current_app_level"] + ".pdf";
+	url = window.location.origin + "/nuxeo/nxfile/default/" + gEmployeeId
+			+ "/employee:current_app_not_signed/" + fileName;
+	
+	link = document.createElement('a');
+	link.href = url;
+	link.download = fileName;
+	
+	evt = document.createEvent('MouseEvents');
+	evt.initEvent('click', true, true);
+	link.dispatchEvent(evt);
+	// Should add a timeout to remove this <a> element
+	return true;
+
+}
+
 // <-------------------- File Upload -------------------->
 function handleFiles(inFiles) {
 	
@@ -522,17 +550,73 @@ function setupSignatureStep() {
 	mainLeft.children().hide();
 	
 	heightStr = $("#mainRightSegment").css("height");// Contains the unit ('234px' for example)
-	html = "";
-	// Align vertically centered => add a div and set some styling
-	// (the parent is position:relative", which is what we need)
-	// => see myHVCenter class
-	html += "<div id='uploaderMainDiv' class='ui center aligned segment' style='margin-top: 37px; height:" + heightStr + "'>"
-				+ "<div class='ui inverted blue segment myHVCenter' style='padding: 0.8em;width: 60%;'>"
-				+ "<p class='ui header'>Please, upload the signed document</p>"
-				+ "<div class='field'>"
-					+ "<input id='selectFile' type='file' onchange='handleFiles(this.files)' />"
-				+ "</div>"
-				+ "<div id='uploadFile' class='ui disabled green button' onclick='sendTheFile();' style='margin-top: 1.5em;'>Upload</div>"
+
+	/*
+	html = "<div id='uploaderMainDiv' class='ui segment' style='margin-top: 37px;'>" // height:" + heightStr + "'>"
+				+ "<h2 class='ui header' style='font-size: larger; margin-left: 2em;'>"
+					+ "<i class='cloud download huge icon'></i>"
+					+ "<div class='content'>"
+						+ "Your application is ready for downloading"
+						+ "<div class='sub header'>"
+						+ "You can now download it and sign it"
+						+ "</div>"
+					+ "</div>"
+					+ "<div class='ui blue button uploadDownload' onclick='downloadNonSignedDoc();' style='margin: 1em 0 0 3em; width:12em'>Download</div>"
+				+ "</h2>"
+				+ "<hr style='margin: 2em 0 2em 0;'/>"
+				+ "<h2 class='ui header' style='font-size: larger; margin-left: 2em;'>"
+					+ "<i class='cloud upload huge icon'></i>"
+					+ "<div class='content'>"
+						+ "Upload the signed document"
+						+ "<div class='sub header'>"
+						+ "This will finish your enrollement process"
+						+ "</div>"
+					+ "</div>"
+					+ "<div class='field'>"
+						+ "<input id='selectFile' type='file' onchange='handleFiles(this.files)' />"
+					+ "</div>"
+					+ "<div id='uploadFile' class='ui disabled blue button uploadDownload' onclick='sendTheFile();' style='margin: 1em 0 0 3em; width:12em'>Upload</div>"
+				+ "</h2>"
+			+ "</div>";
+	*/
+	html = "<div id='uploaderMainDiv' class='ui segment' style='margin-top: 37px;'>"
+				+ "<div class='ui two column grid'>"
+					+ "<div class='column'>"
+						+ "<div class='ui horizontal segment'>"
+							+ "<h2 class='ui header' style='font-size: larger;'>"
+							+ "<i class='cloud download huge icon'></i>"
+							+ "<div class='content'>"
+								+ "Your application is ready for downloading"
+								+ "<div class='sub header'>"
+								+ "You can now download it and sign it"
+								+ "</div>"
+							+ "</div>"
+							+ "<div class='ui center aligned basic segment'>"
+							+ "<div class='ui blue button uploadDownload' onclick='downloadNonSignedDoc();' style='width:12em'>Download</div>"
+							+ "</div>"
+							+ "</h2>"
+						+ "</div>"
+					+ "</div>"
+
+					+ "<div class='column'>"
+						+ "<div class='ui horizontal segment'>"
+							+ "<h2 class='ui header' style='font-size: larger;'>"
+							+ "<i class='cloud upload huge icon'></i>"
+							+ "<div class='content'>"
+								+ "Upload the signed document"
+								+ "<div class='sub header'>"
+								+ "This will finish your enrollement process"
+								+ "</div>"
+							+ "</div>"
+							+ "<div class='field'>"
+								+ "<input id='selectFile' type='file' onchange='handleFiles(this.files)' />"
+							+ "</div>"
+							+ "<div class='ui center aligned basic segment'>"
+							+ "<div id='uploadFile' class='ui disabled blue button uploadDownload' onclick='sendTheFile();' style='width:12em'>Upload</div>"
+							+ "</div>"
+							+ "</h2>"
+						+ "</div>"
+					+ "</div>"
 				+ "</div>"
 		 + "</div>";
 	mainLeft.append(html);
@@ -551,9 +635,10 @@ function setupSignedStep() {
 		
 		heightStr = $("#mainRightSegment").css("height");// Contains the unit ('234px' for example)
 		html = "<div id='signedAppMainDIv' class='ui center aligned segment' style='margin-top: 37px; height:" + heightStr + "'>"
-					+ "<div class='ui segment myHVCenter' style='padding: 0.8em;width: 60%;'>"
+					+ "<div class='ui segment myHVCenter' style='padding: 0.8em;'>"
+						+ "<i class='ui huge info icon'></i>"
 						+ "<p class='ui header'>Your signed application has been submitted</p>"
-						+ "<p></p><p>You will receive an email confirming your enrollment</p>"
+						+ "<p></p><p>You will soon receive an email confirming your enrollment</p>"
 					+ "</div>"
 				+ "</div>";
 		mainLeft.append(html);
